@@ -1,0 +1,11 @@
+apiVersion: v1
+appVersion: "v0.1.54-prerelease"
+description: A Helm chart for BaGet in Kubernetes
+name: baget
+keywords:
+  - nuget
+  - symbol-server
+version: 0.1.0
+home: https://loic-sharma.github.io/BaGet/
+sources:
+  - https://github.com/loic-sharma/BaGet

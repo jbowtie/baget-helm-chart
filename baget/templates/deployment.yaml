@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "baget.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "baget.name" . }}
+    helm.sh/chart: {{ include "baget.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "baget.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "baget.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: APIKEY
+            value: {{ .Values.apiKey }}
+          - name: STORAGE__TYPE
+            value: {{ .Values.storage.type }}
+          - name: STORAGE__PATH
+            value: {{ .Values.storage.path }}
+          - name: STORAGE__ACCOUNTNAME
+            value: {{ .Values.storage.accountName }}
+          - name: STORAGE__CONTAINER
+            value: {{ .Values.storage.container }}
+          - name: STORAGE__ACCESSKEY
+            value: {{ .Values.storage.accessKey }}
+          - name: DATABASE__TYPE
+            value: {{ .Values.database.type }}
+          - name: DATABASE__CONNECTIONSTRING
+            value: {{ .Values.database.connectionString }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          volumeMounts:
+          - name: baget-packages
+            mountPath: {{ .Values.storage.path }}
+          - name: baget-data
+            mountPath: /var/baget-data
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+      - name: baget-packages
+      {{- if .Values.persistence.bagetPackages.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "baget.fullname" . }}-packages
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: baget-data
+      {{- if .Values.persistence.bagetData.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "baget.fullname" . }}-data
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

@@ -1,0 +1,83 @@
+# Default values for baget.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: loicsharma/baget
+  tag: latest
+  pullPolicy: Always # 'Always' when tag is 'latest'
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  ## Kubernetes svc type
+  ## For minikube, set this to NodePort, elsewhere use LoadBalancer
+  type: LoadBalancer
+  port: 80
+
+ingress:
+  enabled: false
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+persistence:
+  ## This volume persists the database about uploaded packages
+  bagetData:
+    enabled: true
+    size: 2Gi
+    accessMode: ReadWriteOnce
+  ## This volume is used to store nuget packages
+  bagetPackages:
+    enabled: true
+    size: 10Gi
+    accessMode: ReadWriteOnce
+
+# if blank (default) no API key is required to publish NuGet packages
+apiKey: ""
+
+# where the NuGet packages will be stored
+storage:
+  type: "FileSystem"
+  accountName: ""
+  container: ""
+  accessKey: ""
+  path: "/var/baget-packages"
+
+# where the package index is saved
+database:
+  type: "Sqlite"
+  connectionString: "Data Source=/var/baget-data/baget.db"
+
+search:
+  type: "Database"
+

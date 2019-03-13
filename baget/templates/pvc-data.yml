@@ -1,0 +1,15 @@
+{{- if .Values.persistence.bagetData.enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "baget.fullname" . }}-data
+spec:
+  accessModes:
+    - {{ .Values.persistence.bagetData.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.bagetData.size | quote }}
+  {{- if .Values.persistence.bagetData.storageClass }}
+  storageClassName: {{ .Values.persistence.bagetData.storageClass | quote }}
+  {{- end }}
+{{- end }}
